@@ -1,6 +1,12 @@
 name: Tests
 
-on: [ push, pull_request ]
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 jobs:
   test:
@@ -45,19 +51,47 @@ jobs:
           composer update --${{ matrix.dependency-version }} --prefer-dist --no-interaction
 
       - name: Execute tests
-        run: vendor/bin/phpunit
+        if: ${{ always() }}
+        run: vendor/bin/phpunit --log-junit ./tests.xml
 
       - name: Install Livewire V1
+        if: ${{ always() }}
         run: |
           composer require "livewire/livewire:^1" --no-interaction
 
       - name: Execute tests
-        run: vendor/bin/phpunit
+        if: ${{ always() }}
+        run: vendor/bin/phpunit --log-junit ./tests_livewire1.xml
 
       - name: Install Livewire V2
+        if: ${{ always() }}
         run: |
           composer require "livewire/livewire:^2" --no-interaction
 
       - name: Execute tests
-        run: vendor/bin/phpunit
+        if: ${{ always() }}
+        run: vendor/bin/phpunit --log-junit ./tests_livewire2.xml
 
+      - name: Report test results to pull request
+        if: ${{ always() }}
+        uses: davidwessman/blinka_action@v1.1.4
+        with:
+          tag: P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.dependency-version }}
+          filename: ./tests.xml
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Report test results to pull request - Livewire V1
+        if: ${{ always() }}
+        uses: davidwessman/blinka_action@v1.1.4
+        with:
+          tag: P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.dependency-version }} Livewire V1
+          filename: ./tests_livewire1.xml
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Report test results to pull request - Livewire V2
+        if: ${{ always() }}
+        uses: davidwessman/blinka_action@v1.1.4
+        with:
+          tag: P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.dependency-version }} Livewire V2
+          filename: ./tests_livewire2.xml
+          github_token: ${{ secrets.GITHUB_TOKEN }}
