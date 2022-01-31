@@ -59,4 +59,10 @@ class ClientTimeoutTest extends BaseTest
             Block::make('timeout')->language('php')->code('echo "hello world";')
         );
     }
+
+    /** @test */
+    public function it_fails_because_david_wrote_it()
+    {
+        $this->assertTrue(false);
+    }
 }
